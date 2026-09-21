@@ -11,7 +11,8 @@ from cinema.serializers import (
     MovieSessionListSerializer,
     MovieDetailSerializer,
     MovieSessionDetailSerializer,
-    MovieListSerializer, OrderListSerializer,
+    MovieListSerializer,
+    OrderListSerializer, OrderSerializer,
 )
 
 
@@ -62,6 +63,13 @@ class OrderViewSet(viewsets.ModelViewSet):
     queryset = Order.objects
     serializer_class = OrderListSerializer
 
+    def get_serializer_class(self):
+        if self.action in ("list", "retrieve"):
+            return OrderListSerializer
+        return OrderSerializer
+
     def get_queryset(self):
-        queryset = self.queryset.filter(user=self.request.user)
-        return queryset
+        return self.queryset.filter(user=self.request.user)
+
+    def perform_create(self, serializer):
+        serializer.save(user=self.request.user)
