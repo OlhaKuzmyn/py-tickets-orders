@@ -105,13 +105,12 @@ class MovieSessionViewSet(viewsets.ModelViewSet):
                 "movie", "cinema_hall", "tickets"
             ).annotate(
                 tickets_available=
-                F("cinema_hall__rows") *
-                F("cinema_hall__seats_in_row")
+                F("cinema_hall__rows")
+                * F("cinema_hall__seats_in_row")
                 - Count("tickets")
             )
 
         return queryset.distinct()
-
 
     def get_serializer_class(self):
         if self.action == "list":
