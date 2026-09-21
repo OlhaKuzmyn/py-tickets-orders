@@ -86,6 +86,11 @@ class MovieSessionViewSet(viewsets.ModelViewSet):
                 show_time__date=date_
             )
 
+        if self.action in ("list", "retrieve"):
+            queryset = queryset.prefetch_related(
+                "movie", "cinema_hall", "tickets"
+            )
+
         return queryset.distinct()
 
 
