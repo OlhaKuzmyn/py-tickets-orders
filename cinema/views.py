@@ -92,7 +92,7 @@ class MovieSessionViewSet(viewsets.ModelViewSet):
         date = self.request.query_params.get("date")
 
         if movie is not None:
-            queryset = queryset.filter(movie__id__in=movie)
+            queryset = queryset.filter(movie=movie)
 
         if date is not None:
             date_ = datetime.strptime(date, "%Y-%m-%d")
