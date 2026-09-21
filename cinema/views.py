@@ -1,5 +1,6 @@
 from datetime import datetime
 
+from django.db.models import Count, F
 from rest_framework import viewsets
 
 from cinema.models import Genre, Actor, CinemaHall, Movie, MovieSession, Order
@@ -14,7 +15,8 @@ from cinema.serializers import (
     MovieDetailSerializer,
     MovieSessionDetailSerializer,
     MovieListSerializer,
-    OrderListSerializer, OrderSerializer,
+    OrderListSerializer,
+    OrderSerializer,
 )
 
 
@@ -43,18 +45,30 @@ class MovieViewSet(viewsets.ModelViewSet):
         title = self.request.query_params.get("title")
 
         if actors is not None:
-            actors_ids = [int(str_id) for str_id in actors.split(",")]
-            queryset = queryset.filter(actors__id__in=actors_ids)
+            actors_ids = [
+                int(str_id) for str_id in actors.split(",")
+            ]
+            queryset = queryset.filter(
+                actors__id__in=actors_ids
+            )
 
         if genres is not None:
-            genres_ids = [int(str_id) for str_id in genres.split(",")]
-            queryset = queryset.filter(genres__id__in=genres_ids)
+            genres_ids = [
+                int(str_id) for str_id in genres.split(",")
+            ]
+            queryset = queryset.filter(
+                genres__id__in=genres_ids
+            )
 
         if title is not None:
-            queryset = queryset.filter(title__icontains=title)
+            queryset = queryset.filter(
+                title__icontains=title
+            )
 
         if self.action in ("list", "retrieve"):
-            queryset = queryset.prefetch_related("actors", "genres")
+            queryset = queryset.prefetch_related(
+                "actors", "genres"
+            )
 
         return queryset.distinct()
 
@@ -89,6 +103,11 @@ class MovieSessionViewSet(viewsets.ModelViewSet):
         if self.action in ("list", "retrieve"):
             queryset = queryset.prefetch_related(
                 "movie", "cinema_hall", "tickets"
+            ).annotate(
+                tickets_available=
+                F("cinema_hall__rows") *
+                F("cinema_hall__seats_in_row")
+                - Count("tickets")
             )
 
         return queryset.distinct()
